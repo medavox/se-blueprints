@@ -1,0 +1,803 @@
+19 is the most recent "baseline" version:
+	2 rotors on the back foot
+	1 merge block on the front foot, directly connected to the car (not via hinge or whatever)
+	projector with aligned projection connected directly to car
+	fully built drill head, with maximum buffer storage
+	4/4 event controllers needed for logic from diagram
+	2/3 timer blocks
+	logic blocks aren't programmed, but are named A,B,C,D
+
+a note that applies to several designs:
+both a merge block AND a rotor on the front foot causes massive rotational klang
+AND	you can't merge the merge-block when a rotorfoot is connected, because different grids would overlap
+
+29 = 1 back foot rotor, front foot has BOTH rotor AND a merge block ON A HINGE
+28 = 1 back rotor foot, 1 front rotor foot, NO merge block front foot (missing)
+27 = 1 back rotor foot, 1 front rotor foot, 1 merge block front foot
+26,25,24,23,22 = 2 back rotor feet, HINGED merge block front foot
+21,20 = 1 back rotor foot, no rotor front foot, 1 directly-connected merge block front foot
+
+19,18 = 2 back rotor feet, 1 front merge-block foot (predecessor of 19)
+17,12A = 2 back rotor feet, merge block front foot, 1 MISPLACED front rotor foot (won't line up with rail)
+16,15,14 = 1 back rotor foot, 1 front rotor foot, merge block front foot
+13,12,11 = 1 back rotor foot, 1 merge block front foot, 1 misaligned front rotor foot
+10,9 = 2 back rotor feet, 1 merge block front foot, 1 misaligned front rotor foot
+
+8,7,6 = 2 back rotor feet, 1 merge block front foot, NO front rotor foot			<---- original classic?
+5,4,3 = same as above but NO drill head
+
+
+Wait.
+the rail is going to be locked to the ground (either as a station or using a foot/gravplate).
+
+So klang doesn't matter all that much, really. Right?
+
+I can't inline the merge blocks because that would break the chain of conveyor travel!
+
+
+Only the projector has to be on the exact same grid as the rail it's building (attached via merge block) -
+the welders can remain attached only by the rotors, so they can access the conveyor network 
+(to get the components needed to build the rail)
+
+
+
+(start with back locked, piston retracted)
+
+1. Extend Piston
+2. Swap lock - front now locked
+3. Retract Piston AND AT THE SAME TIME PERFORM THE FOLLOWING SEQUENCE:
+	a) turn on projector/rail merge block
+	b) turn off car/projector merge block
+	c) build new rail
+	e) turn on car/projector merge block
+	f) turn off projector/rail merge block
+4. Swap lock - back now locked
+
+So add a step in the cycle:
+(Start where Projector is merged to car, car is attached to rail with piston extended)
+Merge car+projector to rail AND detach rotor
+Retract piston
+Unmerge car from projector+rail AND attach car to rail rotor
+Build rail
+Merge car to projector+rail AND detach car from rotor rail
+Unmerge car+projector from rail AND attach foot to rail
+Extend piston, which moves car forwards (drilling)
+
+New name: Combine Tunnelevator
+
+
+
+mission: remove all klang from projector connector swapper
+
+3550_6 
+hinge
+	share inertia tensor on
+	lock on
+	torque 0
+	braking torque 0
+	upper limit 90
+	lower limit 90
+front foot
+	disconnected
+	share inertia tensor off
+	torque 33.6 MNm
+	braking torque 33MNm
+back foot
+	connected
+	share inertia tensor on
+RESULT: slight, but enough to disrupt
+
+-------------------------
+
+3550_7 
+hinge
+	share inertia tensor on
+	lock on
+	torque 0
+	braking torque 0
+	upper limit 90
+	lower limit 90
+front foot
+	disconnected
+	share inertia tensor off
+	torque 33.6 MNm
+	braking torque 33MNm
+back foot
+	connected
+	share inertia tensor *OFF*
+	torque 33.6 MNm
+	braking torque 31.6MNm
+RESULT: subjectively more than 6
+
+----------------------------------
+
+large grid 3550_8
+hinge
+	share inertia tensor *OFF*
+	lock on
+	torque 0
+	braking torque 0
+	upper limit 90
+	lower limit 90
+front foot
+	disconnected
+	share inertia tensor off
+	torque 33.6 MNm
+	braking torque 33MNm
+back foot
+	connected
+	share inertia tensor off
+	torque 33.6 MNm
+	braking torque 31.6MNm
+	
+RESULT: same
+
+-------------------------------
+
+large grid 3550_9
+hinge
+	share inertia tensor off
+	lock on
+	torque 0
+	braking torque 0
+	upper limit 90
+	lower limit 90
+front foot
+	disconnected
+	share inertia tensor off
+	torque *0 MNm*
+	braking torque *0 MNm*
+back foot
+	connected
+	share inertia tensor off
+	torque *0 MNm*
+	braking torque *0 MNm*
+	
+RESULT: same
+
+
+removing the merge block joint and attaching hinge, zero klang
+removing the hinge and disconnecting the merge block, it floats away
+
+when connected by merge block and not by hinge, there is a constant tiny movement/rotation
+(the only other connection point currently attached is the back foot)
+oh. AND the drill rotor
+but with the drill head deleted, there is still micro-wobble (<0.1m/s)
+
+
+even with the entire projector assembly AND the drill head deleted, there is still micro-wobble
+(when just attached by the back foot)
+
+so maybe let's turn braking torque back on
+yussss, that killed the micro-wobble
+maybe that can also help with klang??
+so ignore 3550_9, continue with 8
+
+-----------
+
+3550_8, but with drill head deleted. RESULT: extra klangy (maybe because less heavy?)
+
+braking torque seems to have no effect on micro-wobble
+
+-----------
+
+Stepper Rail 55 / large grid 3550_10
+hinge
+	share inertia tensor *ON*
+	lock on
+	torque 0
+	braking torque 0
+	upper limit 90
+	lower limit 90
+front foot
+	disconnected
+	share inertia tensor *ON*
+	torque 33.6 MNm
+	braking torque 33MNm
+back foot
+	connected
+	share inertia tensor *ON*
+	torque 33.6 MNm
+	braking torque 31.6MNm
+	
+RESULT: still klangs
+
+-------------
+
+
+OKAY so Stepper Rail 56 demonstrates that the klang is definitely from unmerged merge blocks remaining too close.
+this design uses a rotor as a mini piston, by adjusting the rotor head displacement up and down.
+The closer the merge blocks get (while one or both are off), the more rotational forces are created.
+
+so we might actually potentially have a workable solution?
+let's see how the ship (and klang) react to automatically changing the displacement,
+with merging possible (both merge blocks on)
+
+------
+
+ok so basically the blocks also hate to be merged into a single grid, 
+if there are other forces pushing blocks apart that are now in the same grid.
+- such as a rotor with the displacement incorrectly aligned.
+
+hmm. This might still be a workable solution if I can find (and automatically reach/set by increment or decrements) a displacement that isn't klangy
+with light armour blocks instead of merge blocks (no chance of phantom forces caused by the merge blocks), 
+I can get them as close as -3cm without klang (all the way down) IFF I do it slowly. Otherwise, klang seems to kick in around ~-37
+
+Quickly (using timer blocks to move 30cm at once), the limit is -31cm
+
+so if we keep the rotor at displacement 0, then move -30, see if the merge blocks like that
+
+--------
+
+Stepper rail
+
+the 2 timer blocks each turn off or on the merge blocks, respectively
+
+rotor displacement set to 0cm
+
+moving -30cm & turning on merge blocks
+
+RESULT: instant fast klang :(
+
+---------
+
+same as above, but with share inertia tensor on, rotor lock on, rotor torque 0
+RESULT: same
+
+
+maybe there is a more optimal displacement?
+
+I tested -31, -34, -37 and -40, and measured the time between seeing the planet while rotating.
+It never changed from ~1.9 seconds
+
+So if there is a displacement which doesn't cause klang when the merge blocks merge, I haven't found it :(
+
+-----------
+
+59
+
+an event controller which detached the rotor minipiston head when it detects the merge blocks have merged.
+It might be too slow and kick in after the klang starts,
+but then detaching the rotor minipiston in the same timer block that moves the displacement might not work, if the displacement command happens after the detcach command.
+(I wonder what decides the precedence? position in the hotbar?)
+
+RESULT: the detach didn't kick in at all so I manually detached instead. Klang obviously got a head-start, but it did eventually come to a stop again. Partial Success?
+
+-----------------
+
+60
+
+trying out with the detach command in position 9 of the -30cm,merge timerblock (all the -3 cm commands are in 1)
+note that this isn't automatically turning the emrge blocks on and off; they just start ON in the experiment.
+
+RESULT: the detach command was executed at the same time as the "decrease displacement" commands, and it detached before moving fully :(
+
+---------
+
+61
+
+I've moved the detach command to its own timer block, which will be triggered by the TB moving the rotor. 
+Hopefully this indirection will cause the 'detach' command to execute after the rotor has finished moving.
+
+Also I've fixed the MergeBlock state so that they start OFF, and are turned ON by the displ-30 TB.
+
+RESULT: the now-detached projector piece slammed into the rail MB , and bounced off.
+
+Adjust starting displacement and/or reduce total movement
+
+-------
+
+also 61, but with initial displacement set to +3cm
+RESULT: klang-free merge occurred after a small bounce, minimal klang
+
+-------
+
+61, but with initial displacement +6cm
+RESULT: bounced, wobbled about, never quite lined up enough to merge.
+
+reduce displacement movement from 30cm (10 pages of decrement) to 24cm (8 pages)
+
+--------
+
+62
+
+initial displacement 0cm
+displ-30 reduced to 8 pages (pages 1-8), total movement 24cm
+RESULT: bounced, wobbled around, drifted away (but not that far because of the erroneous magnetic forces from the rotor to its detached head)
+
+bring movement back up to 27cm, 9 pages
+
+--------
+
+63
+
+initial displacement 0cm
+displ-30 9 pages (pages 1-9), total movement 27cm
+RESULT: klang-free merger after a brief bounce.
+
+Doesn't look like the most reliable merge, but it's the best klang-free one we have so far
+this almost certainly won't work in gravity, though
+
+
+------
+
+okay so let's go back to the design of large grid 3550_8,
+but modify the behaviour so that the hinge moves the MBs away from each other when not engaged, 
+as quickly as possible (to minuimise time for klang)
+
+there is a complication:
+when attaching the projector back to the rail, we need to give time for hinge to rotate the MB into position BEFORE detaching from the hinge
+we need to wait long enough that the hinge has enough time,
+but we also can't wait too long because the longer the MBs are touching and the hinge is still connected, 
+the more time klang has to spin the ship
+the max hinge speed is 30rpm
+1 rpm = 6 degrees/second
+so 30rpm = 180°/s
+we would cover the 90° we arbitrarily chose in 0.5s
+but timer blocks can only be delayed by >=1.0s
+so we have to halve the speed to 15rpm
+
+maybe there's a way to delay by <1 second?
+
+----------------
+
+20 jan 2024
+
+
+Project a blueprint with the projector in it, with the projected blueprint's projector also having the blueprint
+Then grind down the projector after passing it
+
+Make the twin blades of the drill propeller be assymmetric, so that each drill orbits in a different distance from the centre than its counterpart on the opposite side (translation: just add an extra conveyor block on one side between the centre drill and the propellor) 
+
+And just finish the downward tunneling part first; leave the upward space elevator part as an add-on
+
+----------------
+
+22 jan 2024
+
+so I thought I could create a projector that projected a copy of itself, which itself (when built) would project a copy of itself, and so on. A recursive blueprint.
+
+But the design of Space Engineers is such that the projected blueprint is actually stored as a literal subgrid in-place; I can't make a reference to a subgrid elsewhere. So the blueprint will only recurse down as many times as it has copies.
+
+So it's effectively not much better than one huge (1000+ block) long blueprint.
+
+
+
+So, back to the old idea of a moving projector.
+
+But this time, to avoid klang, what if we have 2 separate cars?
+A projector car that has a piston, and moves along the track by merge blocks (it can grind them down behind it),
+and a welding car that also has its own piston, but which attached to the track by rotors.
+
+The difficulty with that idea though, is that you won't be able to control both cars at once.
+
+
+
+Well, we've now got the precise large piston offsets from here 
+
+https://steamcommunity.com/sharedfiles/filedetails/?id=2965022823
+
+in case it ever goes down, the values are:
+
+large piston: 0.158463m
+small piston  0.031542m
+large basic rotor 0.420864m
+	"to align with grid, you need to stack 5 and set offset to 0.0792m.
+	Unfortunately, stacking at 4 max extension leaves you about 2cm short."
+large advanced rotor 0.199789m
+	offset: -0.1998m
+small basic rotor 0.03604m
+	offset: 0.009m
+small advanced rotor: 0.047895m
+	offset: -0.003m
+small 3x3 rotor: just about exactly 0
+	offset: Default 11cm
+the slope of the collsiion shape of the 1x2 slope is 26.0954°
+
+
+Given that we have these values, MAYBE just maybe we can make a klang-free version of the previous builds???
+
+we don't have to use a merge block to connect the welder car and the projector, JSYK
+
+
+--------
+
+24 jan 2024
+
+I've made a design that requires the rail to be a static grid in order not to klang out.
+
+The best example of this design as of writing is "Rail Piece Starter_13".
+
+However, it demonstrates some fatal flaws with this design.
+
+The car must be connected to the rail with a subgrid in between, because otherwise the game would not allow the advanded roto and its head to overlap when merging.
+
+When we unmerge this projector sidecar from the rail, it is left as a static grid.
+
+As far as I can tell, players cannot automatically convert a grid from static to dynamic (station to ship) without mods.
+
+So every time we want to move the projector sidecar forwards, user intervention is required.
+
+It does also occasionally explode when moving the piston. Same old, same old.
+I think this is just due to phantom forces causing friction along the merge blocks,
+so I reduced the speed of the two pistons from 5m/s to 2m/s. This seemed to help.
+
+
+
+
+So a new idea I've had is to make it so that we don't need to merge-block the projector onto the rail's grid at all:
+
+what if each rail piece is connected to the last via a connector (for mertial transfer) AND a merge block (for structural strength)?
+
+I haven't tested this yet, and I expect the use of 2 joints may cause extreme klang.
+
+BUT connectors are relatively configurable, namely with the the connection force (strength) parameter. Hopefully we can configure it into a workable arrangement.
+
+The projector and welders would all be permanently part of the car.
+
+So the rail-building phase would go something like this:
+
+1. weld up the new rail piece from the projector, as part of the car's grid
+2. turn on the connector to connect the new rail piece to the rail, for control
+3. unweld off the new rail piece from the car's grid
+4. activate the new rail piece's merge block, so that it becomes directly part of the rail's grid and therefore static (aligned and strong enough)
+
+
+the logic to activate the new rail piece's connector & merge block will obviously have to reside on the car,
+and the blocks on each new rail piece that the car's time block(s) are addressing obviously won't exist yet.
+So we'll have to do the something fancy with groups or timer blocks (I forgot which) in order to address currently-nonexistent blocks.
+For an example of this something fancy, see the missile launch system on the big gherkin.
+
+
+------
+later
+
+So I built the idea in my head, with the connectors and merge blocks touching immediately, and of course the ones on the new rail piece can't be built because they overlap with the existing ones (which was kind of the point, but oh well).
+
+So the next thing to try is to move them into position after being built, using a piston
+
+idea: put the new rail piece on a piston attached the the car, then move it into position for docking after being built. This would still of coursemean that the projector also has to be on the piston head, as does the sprue (the block temporarily connecting the new rail piece and the car until it's been successfully connected to the rail)
+
+tip: if I keep the welders off the projector piston, then maybe I can move the projection past fewer total welders
+
+-------
+
+OK I might not be paying enough attention to see what the problem is, but I think I've actually finished the above-described design, and it works :O
+
+I have reduced the goal a little bit more, and decided to just make it go to space (it's already rather wobbly, and a spinning heavy drillhead on the head would probably cause more explosions).
+
+The "finished" proof-of-concept is called "Discontinuous Rail Builder_10".
+
+HOWEVER, I haven't automated any of it yet -- I need to do each step manually right now.
+
+So I'll probably find more problems when I start automating it now.
+
+sequence:
+
+	starting state:
+	
+	front foot attached
+	back foot attached
+	walking pistons extended
+	builder piston extended
+	projector on (it's always on)
+	grinder off
+	welders off
+	
+	1. detach back foot
+	2. SIMULTANEOUSLY:
+		a) retract walking pistons
+		b) turn on welders
+		c) retract building piston
+	3. 
+		a) turn off welders
+		b) turn on new rail piece connector
+	4. activate 'Lock' on new rail piece
+	5. turn on grinder (to remove sprue)
+	6. 
+		a) turn on new rail piece merge block
+		b) turn off grinder
+		c) extend building piston
+	(rail is now done)
+	7. attach back foot
+	8. extend walking pistons
+	9. attach front foot
+	goto 1!
+
+
+so now, described at a lower level (ie from a perspectrive of timer blocks and event controllers):
+
+	starting state:
+	
+	front foot attached
+	back foot attached
+	walking pistons extended
+	builder piston extended
+	projector on (it's always on)
+	grinder off
+	welders off
+	
+	1. ec1 when front foot attached -> tb1 detach back foot, TRIGGER tb2
+	2. tb2 SIMULTANEOUSLY:
+		a) retract walking pistons
+		b) turn on welders
+		c) retract building piston
+		d) START tb3
+	3. tb3 after x many seconds (probably 3 to 5)
+		a) turn off welders
+		b) turn on new rail piece connector
+	4. ec2 when connector (on new rail piece) is turned on -> ec2 activate 'Lock' on new rail piece connector
+	5. ec3 when connector (on new rail piece) connected -> tb4 turn on grinder (to remove sprue), START tb5
+	6. tb5 after like 10ish seconds?
+		a) turn on new rail piece merge block
+		b) turn off grinder
+		c) extend building piston
+	(rail is now done)
+	7. ec4 when merge block on new rail piece is merged -> ec4 attach back foot
+	8. ec5 when back foot attached -> ec5 extend walking pistons
+	9. ec6 when piston % >= 95% -> ec6 attach front foot
+	goto 1!
+	
+	
+	
+--------------
+
+25 jan 2024
+
+I don't know if event controllers can address missing blocks; I'd bet that, like with timer blocks and hotbar actins, the missing block will not be filled in when it begins to exist - probably because blocks probably have a UID of some kind.
+Timer blocks can address a group (which work by name, and ARE filled in when they begin to exist), but event controllers can't.
+
+
+So I'm rewriting the above pseudocode to avoid using projected blocks in event controllers.
+
+
+1. ec1 when front foot attached -> tb1 detach back foot, TRIGGER tb2
+2. tb2 SIMULTANEOUSLY:
+	a) retract walking pistons
+	b) turn on welders
+	c) retract building piston
+	d) START tb3
+3. tb3 after 3-5 seconds (NRP is finished welding)
+	a) turn off welders
+	b) turn on new rail piece connector
+	c) START tb4
+4. tb4 after 1 or 2 seconds (NRP connector is now on)
+	a) activate 'Lock' on new rail piece connector
+	b) START tb5
+5. tb5 after 3-4 seconds  (NRP connector is locked)
+	a) tb5 turn on grinder (to remove sprue)
+	b) START tb6
+6. tb6 after like 12ish seconds? (sprue has been grinded away and NRP is no longer the same grid as car)
+	a) turn on new rail piece merge block
+	b) turn off grinder
+	c) extend building piston
+	d) START tb7
+(rail is now done)
+7. tb7 after 3-5 seconds (NRP merge block is merged) -> tb7 attach back foot
+8. ec2 when back foot attached -> ec2 extend walking pistons
+9. ec3 when piston % >= 95% -> ec3 attach front foot
+goto 1!
+
+
+OK, the above is the exact code that is built into "Discontinuous Rail Builder_22".
+
+it doesn't quite complete the cycle - it doesn't move its feet after building the rail, and sometimes the NRP doesn't merge.
+
+version 23 increases the builder piston's speed to 1m/s, so I'll begin tuning the timer block delays.
+
+10. EC1 when front foot attached -> TRIGGER TB2
+20. TB2:
+	b) turn on welders
+	c) retract building piston
+	d) START TB3
+30. TB3 after 3-5 seconds (NRP is finished welding, and is in position to connect and merge)
+	a) turn off welders
+	b) turn on new rail piece connector
+	c) START TB4
+	*d) detach back foot
+40. TB4 after 1 or 2 seconds (NRP connector is now on)
+	a) activate 'Lock' on new rail piece connector
+	*b) retract walking pistons
+	c) START TB5ak
+50. TB5 after 3-4 seconds  (NRP connector is locked)
+	a) TB5 turn on grinder (to remove sprue)
+	b) START TB6
+60. TB6 after like 12ish seconds? (sprue has been grinded away and NRP is no longer the same grid as car)
+	a) turn on new rail piece merge block
+	b) turn off grinder
+	c) extend building piston
+	d) START TB7
+(rail is now done)
+70. TB7 after 3-5 seconds (NRP merge block is merged) -> TB7 attach back foot
+80. EC2 when back foot attached -> EC2 front foot detach
+90. EC3 when front foot detached -> EC3 extend walking pistons
+A0. EC4 when piston % >= 95% -> EC4 attach front foot
+goto 1!
+
+TB1 is currently spare
+
+TB START:
+	a) TRIGGER TB2
+	b) turn on EC1
+TB STOP:
+	a) turn off EC1
+	
+----------
+
+
+	
+Here's the latest Space Engineers limitation to grapple with:
+
+if the connector locks first, the merge block refuses to merge.
+
+so we have to do an extra dance:
+
+1. build NRP
+2. move NRP into position
+3. turn on connector
+4. grind away sprue
+5. lock using existing connector, on the old rail side (doable?)
+6. turn on NRP merge block 
+7. unlock connectors
+(merge blocks should now merge)
+8. relock connectors
+
+this works manually, and seems to be reliable.
+but it's rather wordy. Can we shorten the sequence?
+
+
+1. buid NRP
+2. move NRP into position
+3. turn on NRP connector, turn off existing merge block
+4. grind away sprue, turn on NRP merge block
+5. lock using existing connector, on the old rail side (doable?)
+7. unlock connectors
+(merge blocks should now merge)
+8. relock connectors
+
+btw these were tested using 'Discontinuous Rail Builder_35'
+
+merging this 'extra dance' into the pseudocode:
+
+
+4. grind away sprue
+5. lock using existing connector, on the old rail side (doable?)
+6. turn on NRP merge block 
+7. unlock connectors
+(merge blocks should now merge)
+8. relock connectors
+
+	starting state:
+	
+	front foot attached
+	back foot attached
+	walking pistons extended
+	builder piston extended
+	projector on (it's always on)
+	grinder off
+	welders off
+
+
+10. EC1 when front foot attached -> TRIGGER TB2
+20. TB2:
+	b) turn on welders
+	c) retract building piston
+	*d) lock NRP connectors
+	e) START TB3
+30. TB3 after 3-5 seconds (NRP is finished welding, and is in position to connect and merge)
+	a) turn off welders
+	b) turn on NRP connector
+	c) detach back foot
+	d) START TB4
+40. TB4 after 1 or 2 seconds (NRP connector is now on)
+	a) activate 'Lock' on new rail piece connector
+	b) retract walking pistons
+	c) START TB5
+50. TB5 after 2 seconds  (NRP connector is locked)
+	a) TB5 turn on grinder (to remove sprue)
+	b) START TB6
+60. TB6 after 7 seconds (sprue has been grinded away and NRP is no longer the same grid as car)
+	a) turn on NRP merge block
+	b) turn off grinder
+	c) extend building piston
+	d) START TB6.5
+65. TB6.5 after 2s
+	a) turn off NRP connector
+	b) START TB7
+(merge has occurred)
+70. TB7 after 3-5 seconds (NRP merge block is merged) 
+	a) TB7 attach back foot
+	b) turn on NRP connector
+80. EC2 when back foot attached -> EC2 front foot detach
+90. EC3 when front foot detached -> EC3 extend walking pistons
+A0. EC4 when piston % >=100% -> EC4 attach front foot
+goto 1!
+
+still need to lock NRP connector!
+
+TB START:
+	a) TRIGGER TB2
+	b) turn on EC1
+TB STOP:
+	a) turn off EC1
+	
+
+
+
+-------
+	
+ship consistently explodes when connecting front foot to the newly-built rail; UNLESS we disable rotor lock before attaching.
+
+Toggling it off and then on again still causes an explosion
+
+--------
+
+26 Jan 2024
+
+You don't need to add full steps into the loop for the disabling/enabling of rotor lock - 
+just 2 event controllers, one for each foot. Upon detach, disable rotor lock. 
+Upon attach, enable it again
+
+I wrote that overnight. Done it now.
+
+Turns out there is only a toggle (on/off) action available for rotor lock, so I've used that. 
+
+Feels like it will be less reliable, but I've no alternative.
+
+--
+
+Nope, apparently locking immediately upon attach is still too sooon for space engineers, and still causes explosive klang.
+
+So I've now introduced a 2-second delay into the lock upon attach (but not for detach)/
+
+I'll try cutting this down to 1 second.
+
+
+
+Outstanding problems:
+
+I'm not reconnecting the connectors after the merge blocks merge
+the traction of the walking pistons is still acting weird and slow;
+	move the walk step somewhere else again within the build loop (so that nothing else is moving)
+	but also make sure that both feet are attached upon conecting the NRP, or else vibrations occur
+	
+	
+IT WORKS! IT FUCKING WORKS
+VERSION 41 SUCCESSFULLY REPEATS (I watched it build and then move onto 6 NRPs)
+
+
+Blueprintable state:
+
+	front foot attached
+	back foot attached
+	walking pistons extended
+	builder piston extended
+	grinder off
+	welders off
+	old rail connector on
+	old merge block on
+	event controller 1 off
+	all other computer blocks on
+
+loop tuning:
+
+we don't need to wait for the builder piston to extend again
+we're trying to retract the walking pistons while also locking the connectors
+grinding only takes 6 seconds
+the step before grinding is too long
+
+version 44 is the best working so far
+
+idea: we could move the connector/merge block dance logic to the rail itself, then grind it away later
+
+
+I've just realised: the timings assume specific welding and grinding speed settings.
+
+version 46 has some shorter timer delays, to speed up the entire loop
+
+current total time per rail piece: 29 seconds
+
+
+PROBLEM: the design starts to wobble out after a few iterations, then fails to connect with the back foot and/or locks the NRP at a very bad angle.
+Only in the yaw direction of the car.
+maybe the cause is the rotor lock not being enabled when it needs to be?
